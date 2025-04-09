@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Job Board - Find Your Dream Job{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded mb-4">
+    <div class="container">
+        <h1 class="display-4">Find Your Dream Job</h1>
+        <p class="lead">Browse thousands of job listings or post a job opening to find the perfect candidate.</p>
+        <hr class="my-4">
+        <form action="{% url 'job_list' %}" method="get" class="row g-3">
+            <div class="col-md-5">
+                <input type="text" name="keyword" class="form-control form-control-lg" placeholder="Job title or keyword">
+            </div>
+            <div class="col-md-5">
+                <input type="text" name="location" class="form-control form-control-lg" placeholder="Location">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-search me-2"></i>Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-search fa-3x text-primary mb-3"></i>
+                <h4 class="card-title">Find Jobs</h4>
+                <p class="card-text">Search and filter through thousands of vacancies based on your preferences.</p>
+                <a href="{% url 'job_list' %}" class="btn btn-outline-primary">Browse Jobs</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-user-tie fa-3x text-primary mb-3"></i>
+                <h4 class="card-title">For Candidates</h4>
+                <p class="card-text">Create a profile, upload your resume, and apply to jobs with a single click.</p>
+                {% if user.is_authenticated and user.user_type == 'candidate' %}
+                    <a href="{% url 'candidate_dashboard' %}" class="btn btn-outline-primary">Go to Dashboard</a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary">Register as Candidate</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-building fa-3x text-primary mb-3"></i>
+                <h4 class="card-title">For Employers</h4>
+                <p class="card-text">Post job vacancies, manage applications, and find the perfect candidates.</p>
+                {% if user.is_authenticated and user.user_type == 'employer' %}
+                    <a href="{% url 'employer_dashboard' %}" class="btn btn-outline-primary">Go to Dashboard</a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-outline-primary">Register as Employer</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12 text-center mb-4">
+        <h2>How It Works</h2>
+        <p class="lead">Our platform makes it easy to connect employers with potential candidates</p>
+    </div>
+    <div class="col-md-3">
+        <div class="text-center mb-4">
+            <div class="bg-primary text-white rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-user-plus fa-2x"></i>
+            </div>
+            <h4>Create an Account</h4>
+            <p>Sign up as a job seeker or employer to get started on our platform.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="text-center mb-4">
+            <div class="bg-primary text-white rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-file-alt fa-2x"></i>
+            </div>
+            <h4>Complete Profile</h4>
+            <p>Add your details and upload your resume to increase your visibility.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="text-center mb-4">
+            <div class="bg-primary text-white rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-search fa-2x"></i>
+            </div>
+            <h4>Search Jobs/Candidates</h4>
+            <p>Browse through listings or review applications from interested candidates.</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="text-center mb-4">
+            <div class="bg-primary text-white rounded-circle d-inline-flex justify-content-center align-items-center mb-3" style="width: 80px; height: 80px;">
+                <i class="fas fa-handshake fa-2x"></i>
+            </div>
+            <h4>Get Hired/Hire</h4>
+            <p>Connect with employers or find the perfect candidate for your open position.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12 text-center mb-4">
+        <h2>Join Our Community Today</h2>
+        <p class="lead">Connect with thousands of employers and job seekers</p>
+    </div>
+    <div class="col-12 text-center">
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Get Started</a>
+    </div>
+</div>
+{% endblock %}

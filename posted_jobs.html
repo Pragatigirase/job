@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}My Job Postings - Job Board{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>My Job Postings</h2>
+            <div>
+                <a href="{% url 'employer_dashboard' %}" class="btn btn-secondary me-2">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+                <a href="{% url 'add_job' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Add New Job
+                </a>
+            </div>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="list-group">
+            <a href="{% url 'employer_dashboard' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a href="{% url 'profile' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-building me-2"></i>Company Profile
+            </a>
+            <a href="{% url 'posted_jobs' %}" class="list-group-item list-group-item-action active">
+                <i class="fas fa-briefcase me-2"></i>My Job Posts
+            </a>
+            <a href="{% url 'add_job' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-plus-circle me-2"></i>Post a New Job
+            </a>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Filter by Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{% url 'posted_jobs' %}" class="list-group-item list-group-item-action {% if not status_filter %}active{% endif %}">
+                        All Jobs
+                    </a>
+                    <a href="{% url 'posted_jobs' %}?status=draft" class="list-group-item list-group-item-action {% if status_filter == 'draft' %}active{% endif %}">
+                        Draft Jobs
+                    </a>
+                    <a href="{% url 'posted_jobs' %}?status=open" class="list-group-item list-group-item-action {% if status_filter == 'open' %}active{% endif %}">
+                        Active Jobs
+                    </a>
+                    <a href="{% url 'posted_jobs' %}?status=closed" class="list-group-item list-group-item-action {% if status_filter == 'closed' %}active{% endif %}">
+                        Closed Jobs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    {% if status_filter == 'draft' %}
+                        Draft Jobs
+                    {% elif status_filter == 'open' %}
+                        Active Jobs
+                    {% elif status_filter == 'closed' %}
+                        Closed Jobs
+                    {% else %}
+                        All Job Postings
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job Title</th>
+                                    <th>Location</th>
+                                    <th>Posted Date</th>
+                                    <th>Applications</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for job in page_obj %}
+                                <tr>
+                                    <td>{{ job.title }}</td>
+                                    <td>{{ job.location }}</td>
+                                    <td>{{ job.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'job_applicants' job.pk %}">{{ job.application_count }} application{{ job.application_count|pluralize }}</a>
+                                    </td>
+                                    <td>
+                                        {% if job.status == 'draft' %}
+                                            <span class="badge bg-secondary">Draft</span>
+                                        {% elif job.status == 'open' %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% elif job.status == 'closed' %}
+                                            <span class="badge bg-danger">Closed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" id="dropdownMenuButton{{ job.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Actions
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ job.id }}">
+                                                <li><a class="dropdown-item" href="{% url 'job_detail' job.pk %}">View Details</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'edit_job' job.pk %}">Edit</a></li>
+                                                <li><a class="dropdown-item" href="{% url 'job_applicants' job.pk %}">View Applicants</a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                {% if job.status == 'draft' %}
+                                                    <li><a class="dropdown-item text-success" href="{% url 'publish_job' job.pk %}">Publish Job</a></li>
+                                                {% elif job.status == 'open' %}
+                                                    <li><a class="dropdown-item text-warning" href="{% url 'close_job' job.pk %}">Close Job</a></li>
+                                                {% elif job.status == 'closed' %}
+                                                    <li><a class="dropdown-item text-success" href="{% url 'publish_job' job.pk %}">Reopen Job</a></li>
+                                                {% endif %}
+                                                <li><a class="dropdown-item text-danger" href="{% url 'delete_job' job.pk %}">Delete Job</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for i in page_obj.paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                    <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                                {% elif i > page_obj.number|add:"-3" and i < page_obj.number|add:"3" %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-briefcase fa-3x text-muted mb-3"></i>
+                        <h4>No Job Postings</h4>
+                        <p>You haven't posted any jobs yet.</p>
+                        <a href="{% url 'add_job' %}" class="btn btn-primary mt-2">Post Your First Job</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

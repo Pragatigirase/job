@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Job Board{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Edit Profile</h2>
+            <a href="{% url 'profile' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Profile
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    {% if user_type == 'candidate' %}
+                        Update Your Candidate Profile
+                    {% elif user_type == 'employer' %}
+                        Update Your Company Profile
+                    {% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    {% if user_type == 'candidate' %}
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Professional Title</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">For example: "Senior Software Engineer" or "Marketing Specialist"</div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.profile_picture.id_for_label }}" class="form-label">Profile Picture</label>
+                                {{ form.profile_picture }}
+                                {% if form.profile_picture.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.profile_picture.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.resume.id_for_label }}" class="form-label">Resume</label>
+                                {{ form.resume }}
+                                {% if form.resume.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.resume.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                                <div class="form-text">Upload your resume (PDF, DOC, DOCX)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}
+                            <div class="text-danger">
+                                {% for error in form.phone_number.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.skills.id_for_label }}" class="form-label">Skills</label>
+                            {{ form.skills }}
+                            {% if form.skills.errors %}
+                            <div class="text-danger">
+                                {% for error in form.skills.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">List your key skills, separated by commas or line breaks</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.experience.id_for_label }}" class="form-label">Work Experience</label>
+                            {{ form.experience }}
+                            {% if form.experience.errors %}
+                            <div class="text-danger">
+                                {% for error in form.experience.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Describe your previous work experience</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.education.id_for_label }}" class="form-label">Education</label>
+                            {{ form.education }}
+                            {% if form.education.errors %}
+                            <div class="text-danger">
+                                {% for error in form.education.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Describe your educational background</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.about.id_for_label }}" class="form-label">About Me</label>
+                            {{ form.about }}
+                            {% if form.about.errors %}
+                            <div class="text-danger">
+                                {% for error in form.about.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Provide a brief introduction about yourself</div>
+                        </div>
+                    
+                    {% elif user_type == 'employer' %}
+                        <div class="mb-3">
+                            <label for="{{ form.company_name.id_for_label }}" class="form-label">Company Name</label>
+                            {{ form.company_name }}
+                            {% if form.company_name.errors %}
+                            <div class="text-danger">
+                                {% for error in form.company_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.company_logo.id_for_label }}" class="form-label">Company Logo</label>
+                            {{ form.company_logo }}
+                            {% if form.company_logo.errors %}
+                            <div class="text-danger">
+                                {% for error in form.company_logo.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.company_website.id_for_label }}" class="form-label">Company Website</label>
+                                {{ form.company_website }}
+                                {% if form.company_website.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.company_website.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.company_location.id_for_label }}" class="form-label">Company Location</label>
+                                {{ form.company_location }}
+                                {% if form.company_location.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.company_location.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.phone_number.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ form.phone_number }}
+                            {% if form.phone_number.errors %}
+                            <div class="text-danger">
+                                {% for error in form.phone_number.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.company_description.id_for_label }}" class="form-label">Company Description</label>
+                            {{ form.company_description }}
+                            {% if form.company_description.errors %}
+                            <div class="text-danger">
+                                {% for error in form.company_description.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <div class="form-text">Provide information about your company, history, mission, etc.</div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

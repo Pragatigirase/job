@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+
+{% block title %}My Saved Jobs - Job Board{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>My Saved Jobs</h2>
+            <a href="{% url 'candidate_dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="list-group">
+            <a href="{% url 'candidate_dashboard' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a href="{% url 'profile' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-user me-2"></i>My Profile
+            </a>
+            <a href="{% url 'applied_jobs' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-paper-plane me-2"></i>Applied Jobs
+            </a>
+            <a href="{% url 'saved_jobs' %}" class="list-group-item list-group-item-action active">
+                <i class="fas fa-bookmark me-2"></i>Saved Jobs
+            </a>
+            <a href="{% url 'job_list' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-search me-2"></i>Find Jobs
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Saved Jobs</h5>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="row">
+                        {% for saved in page_obj %}
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a href="{% url 'job_detail' saved.job.pk %}">{{ saved.job.title }}</a>
+                                        </h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ saved.job.company.company_name }}</h6>
+                                        
+                                        <div class="d-flex mb-3">
+                                            <div class="me-3">
+                                                <i class="fas fa-map-marker-alt text-primary me-1"></i>{{ saved.job.location }}
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-briefcase text-primary me-1"></i>{{ saved.job.get_job_type_display }}
+                                            </div>
+                                        </div>
+                                        
+                                        {% if saved.job.salary_min or saved.job.salary_max %}
+                                        <p class="card-text mb-3">
+                                            <i class="fas fa-money-bill-wave text-primary me-1"></i>
+                                            {% if saved.job.salary_min and saved.job.salary_max %}
+                                                ${{ saved.job.salary_min }} - ${{ saved.job.salary_max }}
+                                            {% elif saved.job.salary_min %}
+                                                From ${{ saved.job.salary_min }}
+                                            {% elif saved.job.salary_max %}
+                                                Up to ${{ saved.job.salary_max }}
+                                            {% endif %}
+                                        </p>
+                                        {% endif %}
+                                        
+                                        <p class="card-text small">{{ saved.job.description|truncatewords:20 }}</p>
+                                        
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <small class="text-muted">Saved {{ saved.created_at|timesince }} ago</small>
+                                            <div>
+                                                <a href="{% url 'job_detail' saved.job.pk %}" class="btn btn-sm btn-outline-primary me-1">View</a>
+                                                <a href="{% url 'unsave_job' saved.job.pk %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash-alt me-1"></i>Remove
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for i in page_obj.paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                    <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                                {% elif i > page_obj.number|add:"-3" and i < page_obj.number|add:"3" %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-bookmark fa-3x text-muted mb-3"></i>
+                        <h4>No Saved Jobs</h4>
+                        <p>You haven't saved any jobs yet.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-primary mt-2">Browse Jobs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

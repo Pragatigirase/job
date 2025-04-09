@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Application Status - Job Board{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Update Application Status</h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h5>Application Details</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Job:</strong> {{ application.job.title }}</p>
+                            <p><strong>Candidate:</strong> {{ application.candidate.user.get_full_name }}</p>
+                            <p><strong>Applied On:</strong> {{ application.created_at|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Current Status:</strong> 
+                                {% if application.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif application.status == 'reviewed' %}
+                                    <span class="badge bg-info">Reviewed</span>
+                                {% elif application.status == 'shortlisted' %}
+                                    <span class="badge bg-primary">Shortlisted</span>
+                                {% elif application.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% elif application.status == 'accepted' %}
+                                    <span class="badge bg-success">Accepted</span>
+                                {% endif %}
+                            </p>
+                            {% if application.resume %}
+                                <p><strong>Resume:</strong> <a href="{{ application.resume.url }}" target="_blank">View Resume</a></p>
+                            {% elif application.candidate.resume %}
+                                <p><strong>Resume:</strong> <a href="{{ application.candidate.resume.url }}" target="_blank">View Resume</a></p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% if application.cover_letter %}
+                <div class="mb-4">
+                    <h5>Cover Letter</h5>
+                    <div class="p-3 bg-light rounded">
+                        {{ application.cover_letter|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 offset-md-3">
+                            <div class="mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">Update Status</label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.status.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'job_applicants' application.job.pk %}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

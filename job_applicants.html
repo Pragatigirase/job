@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}Applicants for {{ job.title }} - Job Board{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Applicants for "{{ job.title }}"</h2>
+            <a href="{% url 'posted_jobs' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Job Listings
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Job Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h4>{{ job.title }}</h4>
+                        <p><i class="fas fa-map-marker-alt me-2"></i>{{ job.location }}</p>
+                        <p><i class="fas fa-briefcase me-2"></i>{{ job.get_job_type_display }}</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <p><i class="fas fa-calendar-alt me-2"></i>Posted: {{ job.created_at|date:"F d, Y" }}</p>
+                        <p>
+                            <span class="badge {% if job.status == 'draft' %}bg-secondary{% elif job.status == 'open' %}bg-success{% elif job.status == 'closed' %}bg-danger{% endif %} p-2">
+                                {{ job.get_status_display }}
+                            </span>
+                        </p>
+                        <a href="{% url 'job_detail' job.pk %}" class="btn btn-sm btn-outline-primary">View Job Listing</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Filter by Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{% url 'job_applicants' job.pk %}" class="list-group-item list-group-item-action {% if not status_filter %}active{% endif %}">
+                        All Applications
+                    </a>
+                    <a href="{% url 'job_applicants' job.pk %}?status=pending" class="list-group-item list-group-item-action {% if status_filter == 'pending' %}active{% endif %}">
+                        Pending
+                    </a>
+                    <a href="{% url 'job_applicants' job.pk %}?status=reviewed" class="list-group-item list-group-item-action {% if status_filter == 'reviewed' %}active{% endif %}">
+                        Reviewed
+                    </a>
+                    <a href="{% url 'job_applicants' job.pk %}?status=shortlisted" class="list-group-item list-group-item-action {% if status_filter == 'shortlisted' %}active{% endif %}">
+                        Shortlisted
+                    </a>
+                    <a href="{% url 'job_applicants' job.pk %}?status=accepted" class="list-group-item list-group-item-action {% if status_filter == 'accepted' %}active{% endif %}">
+                        Accepted
+                    </a>
+                    <a href="{% url 'job_applicants' job.pk %}?status=rejected" class="list-group-item list-group-item-action {% if status_filter == 'rejected' %}active{% endif %}">
+                        Rejected
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    {% if status_filter %}
+                        {{ status_filter|title }} Applications
+                    {% else %}
+                        All Applications
+                    {% endif %}
+                    <span class="badge bg-light text-dark ms-2">{{ page_obj.paginator.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>Applied On</th>
+                                    <th>Status</th>
+                                    <th>Resume</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in page_obj %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if application.candidate.profile_picture %}
+                                                <img src="{{ application.candidate.profile_picture.url }}" alt="{{ application.candidate.user.get_full_name }}" class="rounded-circle me-2" style="width: 40px; height: 40px;">
+                                            {% else %}
+                                                <div class="bg-light d-flex align-items-center justify-content-center rounded-circle me-2" style="width: 40px; height: 40px;">
+                                                    <i class="fas fa-user text-secondary"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ application.candidate.user.get_full_name }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ application.candidate.title|default:"" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ application.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if application.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif application.status == 'reviewed' %}
+                                            <span class="badge bg-info">Reviewed</span>
+                                        {% elif application.status == 'shortlisted' %}
+                                            <span class="badge bg-primary">Shortlisted</span>
+                                        {% elif application.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% elif application.status == 'accepted' %}
+                                            <span class="badge bg-success">Accepted</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if application.resume %}
+                                            <a href="{{ application.resume.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                <i class="fas fa-file-pdf me-1"></i>Resume
+                                            </a>
+                                        {% elif application.candidate.resume %}
+                                            <a href="{{ application.candidate.resume.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                <i class="fas fa-file-pdf me-1"></i>Resume
+                                            </a>
+                                        {% else %}
+                                            <span class="badge bg-secondary">No Resume</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#applicationDetailsModal{{ application.id }}">
+                                                View Details
+                                            </button>
+                                            <a href="{% url 'update_application_status' application.pk %}" class="btn btn-sm btn-outline-secondary">
+                                                Update Status
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- Application Details Modal -->
+                                        <div class="modal fade" id="applicationDetailsModal{{ application.id }}" tabindex="-1" aria-labelledby="applicationDetailsModalLabel{{ application.id }}" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-primary text-white">
+                                                        <h5 class="modal-title" id="applicationDetailsModalLabel{{ application.id }}">
+                                                            Application from {{ application.candidate.user.get_full_name }}
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row mb-4">
+                                                            <div class="col-md-8">
+                                                                <h5>{{ application.candidate.user.get_full_name }}</h5>
+                                                                <p class="text-muted">{{ application.candidate.title|default:"" }}</p>
+                                                                <p><i class="fas fa-envelope me-2"></i>{{ application.candidate.user.email }}</p>
+                                                                {% if application.candidate.phone_number %}
+                                                                    <p><i class="fas fa-phone me-2"></i>{{ application.candidate.phone_number }}</p>
+                                                                {% endif %}
+                                                            </div>
+                                                            <div class="col-md-4 text-end">
+                                                                <p><i class="fas fa-calendar-alt me-2"></i>Applied: {{ application.created_at|date:"F d, Y" }}</p>
+                                                                <p>
+                                                                    Status: 
+                                                                    {% if application.status == 'pending' %}
+                                                                        <span class="badge bg-warning">Pending</span>
+                                                                    {% elif application.status == 'reviewed' %}
+                                                                        <span class="badge bg-info">Reviewed</span>
+                                                                    {% elif application.status == 'shortlisted' %}
+                                                                        <span class="badge bg-primary">Shortlisted</span>
+                                                                    {% elif application.status == 'rejected' %}
+                                                                        <span class="badge bg-danger">Rejected</span>
+                                                                    {% elif application.status == 'accepted' %}
+                                                                        <span class="badge bg-success">Accepted</span>
+                                                                    {% endif %}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="mb-4">
+                                                            <h6>Cover Letter</h6>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {% if application.cover_letter %}
+                                                                    {{ application.cover_letter|linebreaks }}
+                                                                {% else %}
+                                                                    <p class="text-muted">No cover letter provided.</p>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        {% if application.candidate.skills %}
+                                                        <div class="mb-4">
+                                                            <h6>Skills</h6>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {{ application.candidate.skills|linebreaks }}
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if application.candidate.experience %}
+                                                        <div class="mb-4">
+                                                            <h6>Experience</h6>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {{ application.candidate.experience|linebreaks }}
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if application.candidate.education %}
+                                                        <div class="mb-4">
+                                                            <h6>Education</h6>
+                                                            <div class="p-3 bg-light rounded">
+                                                                {{ application.candidate.education|linebreaks }}
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        {% if application.resume %}
+                                                            <a href="{{ application.resume.url }}" target="_blank" class="btn btn-outline-primary">
+                                                                <i class="fas fa-file-pdf me-1"></i>View Resume
+                                                            </a>
+                                                        {% elif application.candidate.resume %}
+                                                            <a href="{{ application.candidate.resume.url }}" target="_blank" class="btn btn-outline-primary">
+                                                                <i class="fas fa-file-pdf me-1"></i>View Resume
+                                                            </a>
+                                                        {% endif %}
+                                                        <a href="{% url 'update_application_status' application.pk %}" class="btn btn-primary">Update Status</a>
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if page_obj.paginator.num_pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for i in page_obj.paginator.page_range %}
+                                {% if page_obj.number == i %}
+                                    <li class="page-item active"><a class="page-link" href="#">{{ i }}</a></li>
+                                {% elif i > page_obj.number|add:"-3" and i < page_obj.number|add:"3" %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ i }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ i }}</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item disabled">
+                                    <a class="page-link" href="#" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h4>No Applications Found</h4>
+                        <p>There are no applications for this job{% if status_filter %} with the selected status{% endif %}.</p>
+                        {% if status_filter %}
+                            <a href="{% url 'job_applicants' job.pk %}" class="btn btn-primary mt-2">View All Applications</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

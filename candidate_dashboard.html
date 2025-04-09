@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Candidate Dashboard - Job Board{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Candidate Dashboard</h2>
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+                <i class="fas fa-user-edit me-2"></i>Edit Profile
+            </a>
+        </div>
+        <hr>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Left Sidebar -->
+    <div class="col-lg-3 mb-4">
+        <div class="card mb-4">
+            <div class="card-body text-center">
+                {% if candidate.profile_picture %}
+                    <img src="{{ candidate.profile_picture.url }}" alt="{{ user.get_full_name }}" class="rounded-circle img-fluid mb-3" style="max-width: 120px;">
+                {% else %}
+                    <div class="bg-light d-flex align-items-center justify-content-center rounded-circle mx-auto mb-3" style="width: 120px; height: 120px;">
+                        <i class="fas fa-user fa-4x text-secondary"></i>
+                    </div>
+                {% endif %}
+                <h5 class="card-title">{{ user.get_full_name }}</h5>
+                <p class="text-muted">{{ candidate.title|default:"No title specified" }}</p>
+            </div>
+        </div>
+        
+        <div class="list-group mb-4">
+            <a href="{% url 'candidate_dashboard' %}" class="list-group-item list-group-item-action active">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a href="{% url 'profile' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-user me-2"></i>My Profile
+            </a>
+            <a href="{% url 'applied_jobs' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-paper-plane me-2"></i>Applied Jobs
+                <span class="badge bg-primary rounded-pill float-end">{{ applied_jobs_count }}</span>
+            </a>
+            <a href="{% url 'saved_jobs' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-bookmark me-2"></i>Saved Jobs
+                <span class="badge bg-primary rounded-pill float-end">{{ saved_jobs_count }}</span>
+            </a>
+            <a href="{% url 'job_list' %}" class="list-group-item list-group-item-action">
+                <i class="fas fa-search me-2"></i>Find Jobs
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Resume</h5>
+            </div>
+            <div class="card-body">
+                {% if candidate.resume %}
+                    <p><i class="fas fa-file-alt me-2"></i>Resume uploaded</p>
+                    <a href="{{ candidate.resume.url }}" class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                {% else %}
+                    <p class="text-muted">No resume uploaded yet.</p>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-upload me-2"></i>Upload Resume
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="col-lg-9">
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card border-primary h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted">Applied Jobs</h6>
+                                <h2 class="mb-0">{{ applied_jobs_count }}</h2>
+                            </div>
+                            <div class="bg-primary rounded-circle p-3">
+                                <i class="fas fa-paper-plane fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <a href="{% url 'applied_jobs' %}" class="btn btn-sm btn-outline-primary mt-3">View All</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-success h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted">Saved Jobs</h6>
+                                <h2 class="mb-0">{{ saved_jobs_count }}</h2>
+                            </div>
+                            <div class="bg-success rounded-circle p-3">
+                                <i class="fas fa-bookmark fa-2x text-white"></i>
+                            </div>
+                        </div>
+                        <a href="{% url 'saved_jobs' %}" class="btn btn-sm btn-outline-success mt-3">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Applications -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Recent Applications</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Job</th>
+                                    <th>Company</th>
+                                    <th>Applied On</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in recent_applications %}
+                                <tr>
+                                    <td>{{ application.job.title }}</td>
+                                    <td>{{ application.job.company.company_name }}</td>
+                                    <td>{{ application.created_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if application.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif application.status == 'reviewed' %}
+                                            <span class="badge bg-info">Reviewed</span>
+                                        {% elif application.status == 'shortlisted' %}
+                                            <span class="badge bg-primary">Shortlisted</span>
+                                        {% elif application.status == 'rejected' %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% elif application.status == 'accepted' %}
+                                            <span class="badge bg-success">Accepted</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'job_detail' application.job.pk %}" class="btn btn-sm btn-outline-primary">View Job</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if applied_jobs_count > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="{% url 'applied_jobs' %}" class="btn btn-outline-primary">View All Applications</a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-paper-plane fa-3x text-muted mb-3"></i>
+                        <h5>No Applications Yet</h5>
+                        <p>You haven't applied for any jobs yet.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-primary">Find Jobs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Recommended Jobs -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Recommended Jobs</h5>
+            </div>
+            <div class="card-body">
+                {% if recommended_jobs %}
+                    <div class="row">
+                        {% for job in recommended_jobs %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">
+                                            <a href="{% url 'job_detail' job.pk %}">{{ job.title }}</a>
+                                        </h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ job.company.company_name }}</h6>
+                                        <p class="card-text small">
+                                            <i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}<br>
+                                            <i class="fas fa-briefcase me-1"></i>{{ job.get_job_type_display }}
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <small class="text-muted">{{ job.created_at|timesince }} ago</small>
+                                            <a href="{% url 'job_detail' job.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'job_list' %}" class="btn btn-outline-primary">View All Jobs</a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5>No Recommendations Yet</h5>
+                        <p>Apply to more jobs to get personalized recommendations.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-primary">Browse Jobs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
